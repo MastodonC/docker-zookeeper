@@ -27,6 +27,7 @@ EOF
 
 function zk_server_string() {
     local name=${1^^}
+    local myid=${2}
     local p1="${name}_PORT_2888_TCP_ADDR"
     local p2="${name}_PORT_2888_TCP_PORT"
     local p3="${name}_PORT_3888_TCP_PORT"
@@ -34,9 +35,15 @@ function zk_server_string() {
     if [ -z "${!p1}" ] ; then
 	echo "No config for $1"
     else
-	local conf="server.$2=${!p1}:${!p2}:${!p3}"
+	local conf="server.${myid}=${!p1}:${!p2}:${!p3}"
+	local myid_file="${DATA_DIR}/myid"
+
 	echo "Adding $1 server config: ${conf}"
-	echo  ${conf} >> ${CONFIG_FILE}
+	echo ${conf} >> ${CONFIG_FILE}
+
+	echo "Creating ${myid_file}..."
+	mkdir -p ${DATA_DIR}/$1
+	echo "${myid}" > "${myid_file}"
     fi
 }
 
