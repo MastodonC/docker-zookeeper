@@ -25,19 +25,29 @@ log4j.appender.LOGSTASH.RemoteHost=${LOGSTASH_PORT_4561_TCP_ADDR}
 log4j.appender.LOGSTASH.ReconnectionDelay=30000
 EOF
 
+function zk_server_string() {
+    local name=${1^^}
+    local p1="${name}_PORT_2888_TCP_ADDR"
+    local p2="${name}_PORT_2888_TCP_PORT"
+    local p3="${name}_PORT_3888_TCP_PORT"
+
+    if [ -z "${!p1}" ] ; then
+	echo "No config for $1"
+    else
+	local conf="server.$2=${!p1}:${!p2}:${!p3}"
+	echo "Adding $1 server config: ${conf}"
+	echo  ${conf} >> ${CONFIG_FILE}
+    fi
+}
+
 sed -e "s@dataDir=.*@dataDir=/data/zookeeper/${HOSTNAME}@" \
     /zookeeper/conf/zoo_sample.cfg > ${CONFIG_FILE}
 
-if [ -z "${ZK01_PORT_2888_TCP_ADDR}" ]; then
-    echo "server.1=${ZK01_PORT_2888_TCP_ADDR}:${ZK01_PORT_2888_TCP_PORT}:${ZK01_PORT_3888_TCP_PORT}" >> ${CONFIG_FILE}
-fi
+zk_server_string zk01 1
 
-if [ -z "${ZK02_PORT_2888_TCP_ADDR}" ]; then
-    echo "server.2=${ZK02_PORT_2888_TCP_ADDR}:${ZK02_PORT_2888_TCP_PORT}:${ZK02_PORT_3888_TCP_PORT}" >> ${CONFIG_FILE}
-fi
+zk_server_string zk02 2
 
-if [ -z "${ZK03_PORT_2888_TCP_ADDR}" ]; then
-    echo "server.3=${ZK03_PORT_2888_TCP_ADDR}:${ZK03_PORT_2888_TCP_PORT}:${ZK03_PORT_3888_TCP_PORT}" >> ${CONFIG_FILE}
-fi
+zk_server_string zk03 3
+
 
 /zookeeper/bin/zkServer.sh start-foreground
