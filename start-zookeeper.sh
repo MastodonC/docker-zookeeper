@@ -53,10 +53,10 @@ sed -e "s@dataDir=.*@dataDir=/data/zookeeper/${HOSTNAME}@" \
 #Add entries for zookeeper peers.
 for i in $(seq 255)
 do
-    local zk_name=$(printf "ZK%02s" ${i})
-    local zk_env_name="${zk_name}_PORT_2181_TCP_ADDR"
+    zk_name=$(printf "ZK%02d" ${i})
+    zk_env_name="${zk_name}_PORT_2181_TCP_ADDR"
 
-    [ ! -z "${!zk_env_name}"] && zk_server_string ${zk_name} ${i}
+    [ ! -z "${!zk_env_name}" ] && zk_server_string ${zk_name} ${i}
 
 done
 
