@@ -43,7 +43,7 @@ function zk_server_string() {
     fi
 }
 
-local myid_file="${DATA_DIR}/myid"
+myid_file="${DATA_DIR}/myid"
 echo "Creating ${myid_file} ..."
 echo "${ZOOKEEPER_INSTANCE_ID:?ZOOKEEPER_INSTANCE_ID_NOT_DEFINED}" > "${myid_file}"
 
