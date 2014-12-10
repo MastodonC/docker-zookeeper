@@ -36,25 +36,28 @@ function zk_server_string() {
 	echo "No config for $1"
     else
 	local conf="server.${myid}=${!p1}:${!p2}:${!p3}"
-	local myid_file="${DATA_DIR}/myid"
 
 	echo "Adding $1 server config: ${conf}"
 	echo ${conf} >> ${CONFIG_FILE}
 
-	echo "Creating ${myid_file}..."
-	mkdir -p ${DATA_DIR}/$1
-	echo "${myid}" > "${myid_file}"
     fi
 }
+
+local myid_file="${DATA_DIR}/myid"
+echo "Creating ${myid_file} ..."
+echo "${ZOOKEEPER_INSTANCE_ID:?ZOOKEEPER_INSTANCE_ID_NOT_DEFINED}" > "${myid_file}"
 
 sed -e "s@dataDir=.*@dataDir=/data/zookeeper/${HOSTNAME}@" \
     /zookeeper/conf/zoo_sample.cfg > ${CONFIG_FILE}
 
-zk_server_string zk01 1
+#Add entries for zookeeper peers.
+for i in $(seq 255)
+do
+    local zk_name=$(printf "ZK%02s" ${i})
+    local zk_env_name="${zk_name}_PORT_2181_TCP_ADDR"
 
-zk_server_string zk02 2
+    [ ! -z "${!zk_env_name}"] && zk_server_string ${zk_name} ${i}
 
-zk_server_string zk03 3
-
+done
 
 /zookeeper/bin/zkServer.sh start-foreground
